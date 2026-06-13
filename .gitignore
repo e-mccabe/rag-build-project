@@ -10,3 +10,6 @@ wheels/
 .venv
 
 .env
+
+# Demo Files
+demo_embed.py

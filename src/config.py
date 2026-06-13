@@ -21,4 +21,4 @@ OPENAI_API_KEY = _require("OPENAI_API_KEY")
 # Project Model Choice 
 EMBEDDING_MODEL = 'text-embedding-3-small'
 
-RESPONSE_MODEL = 'gpt-5.4-nano-2026-03-17'
+RESPONSE_MODEL = 'gpt-4o-mini'
