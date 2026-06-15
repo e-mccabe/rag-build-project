@@ -15,8 +15,10 @@ class Document:
 # Build a function that loads in all the .md files
 def load_vault(vault_dir:str | Path) -> list[dict]:
 
+    vault = Path(vault_dir)
+
     documents = []
-    for md_path in sorted(vault_dir.rglob('*.md')):
+    for md_path in sorted(vault.rglob('*.md')):
 
         # Using pathlib to open .md files and extract the relevant YAML frontmatter
         with md_path.open(encoding='utf-8') as f:
@@ -24,7 +26,7 @@ def load_vault(vault_dir:str | Path) -> list[dict]:
         
         content = post.content
         metadata = post.metadata
-        path = str(md_path.relative_to(vault_dir)).replace("\\",'/')
+        path = str(md_path.relative_to(vault)).replace("\\",'/')
         name = str(metadata.get('title') or md_path.stem)
 
         documents.append(
