@@ -42,3 +42,27 @@ def index_chunks(chunks:list[str]) -> None:
         documents=chunk_texts,
         metadatas=metadatas
     )
+
+
+def search(query:str,top_k:int = 5) ->list[dict]:
+
+    collection = get_collection()
+    query_vector = embed_texts([query])[0]
+
+    results = collection.query(query_embeddings=[query_vector],n_results = top_k)
+
+    query_chunks = []
+
+    for text, metadata, distance in zip(results['documents'][0],results['metadatas'][0],results['distances'][0]):
+
+        query_chunks.append(
+            {
+                'text':text,
+                'metadata':metadata,
+                'distance':distance
+            }
+        )
+ 
+    return query_chunks
+
+
