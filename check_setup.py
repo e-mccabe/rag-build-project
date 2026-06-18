@@ -12,9 +12,9 @@ def check_openai() -> None:
 
     resp = client.responses.create(model =RESPONSE_MODEL,
                                    max_output_tokens=20,
-                                   input = 'Repy with confirmation model set up is successful')
+                                   input = 'Reply with confirmation model set up is successful')
     
-    print(f'Open AI {RESPONSE_MODEL} works. Response from model {resp}')
+    print(f'OpenAI {RESPONSE_MODEL} works. Model response: {resp.output_text}')
 
 
 if __name__ == "__main__":
