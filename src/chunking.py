@@ -53,7 +53,7 @@ def _split_string_by_headers(content:str) -> list[tuple[list[str],str]]:
 def chunking_document(document:Document) -> list[Chunk]:
 
     chunks: list[Chunk] = []
-    index: int  = 0
+    index: int  = 0  # Chunk index within a document
 
     for headings, section in _split_string_by_headers(document.content):
 

@@ -15,7 +15,7 @@ def _flatten_metadata_lists(metadata:dict) -> dict:
     for key,value in metadata.items():
         flat_metadata[key] = ','.join(value) if isinstance(value, list) else value 
     
-    return flat
+    return flat_metadata
 
 def get_collection():
     client = chromadb.PersistentClient(path=PERSIST_DIR)
