@@ -12,6 +12,7 @@ wheels/
 
 .env
 .chroma/
+.vscode
 
 # Demo Files
 demo_embed.py

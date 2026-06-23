@@ -1,5 +1,0 @@
-{
-    "editor.defaultFormatter": "ms-python.vscode-pylance",
-    "python.languageServer": "Pylance"
-
-}
