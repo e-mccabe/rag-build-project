@@ -65,7 +65,8 @@ def chunking_document(document:Document) -> list[Chunk]:
                     "source":document.path,
                     "file":document.name,
                     "headings":headings,
-                    "index":index
+                    "index":index,
+                    **document.metadata
                 }
                 )
                     )
