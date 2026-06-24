@@ -12,6 +12,12 @@ A simple RAG pipeline built in Python and Streamlit that uses markdown files fro
 
 ## Features
 
+-**Loading**
+-**Chunking** 
+-**Embedding**
+-**Vector Storing & Search**
+-**Querying**
+
 ## Installation
 
 ## Usage 
