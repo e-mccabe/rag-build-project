@@ -17,8 +17,20 @@ wheels/
 .chroma/
 
 # Visual Studio Related Files
-.code-workspace
+*.code-workspace
 .vscode
 
 # Demo Files
 demo_embed.py
+
+# Jupyter checkpoint files (auto-generated per notebook, clutters repo)
+.ipynb_checkpoints/
+
+# Tool caches (regenerated locally, no value in version control)
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# OS-generated files (Mac/Windows clutter from cloning on different OS)
+.DS_Store
+Thumbs.db
