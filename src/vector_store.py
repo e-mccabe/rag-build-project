@@ -1,7 +1,6 @@
 """Building a local vector store using Chroma DB"""
 import chromadb
 
-from src.chunking import Chunk
 from src.embedding import embed_texts
 
 PERSIST_DIR = ".chroma"
@@ -44,12 +43,16 @@ def index_chunks(chunks:list[str]) -> None:
     )
 
 
-def search(query:str,top_k:int = 5) ->list[dict]:
+def search(query: str, top_k: int = 5, where: dict | None = None,contains: dict | None = None,max_distance: float = 0.5) ->list[dict]:
 
     collection = get_collection()
     query_vector = embed_texts([query])[0]
 
-    results = collection.query(query_embeddings=[query_vector],n_results = top_k)
+    if where:
+        results = collection.query(query_embeddings=[query_vector],n_results = top_k,where=where)
+
+    else:
+        results = collection.query(query_embeddings=[query_vector],n_results = top_k)
 
     query_chunks = []
 
