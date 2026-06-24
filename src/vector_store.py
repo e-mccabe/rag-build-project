@@ -43,7 +43,7 @@ def index_chunks(chunks:list[str]) -> None:
     )
 
 
-def search(query: str, top_k: int = 5, where: dict | None = None,contains: dict | None = None,max_distance: float = 0.5) ->list[dict]:
+def search(query: str, top_k: int = 15, where: dict | None = None,contains: dict | None = None,max_distance: float = 0.5) ->list[dict]:
 
     collection = get_collection()
     query_vector = embed_texts([query])[0]
