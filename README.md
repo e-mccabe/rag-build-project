@@ -18,6 +18,21 @@ A simple RAG pipeline built in Python and Streamlit that uses markdown files fro
 -**Vector Storing & Search**
 -**Querying**
 
+### Architecture Flow 
+
+```mermaid
+graph TD;
+    Document Corpus -> Loading & Chunking;
+    Loading & Chunking -> Embedding Chunked Corpus;
+    Vector Store -> Retrieve Top-K Chunks;
+    User Query -> Embed Query;
+    Embed Query -> Retrieve Top-K Chunks;
+    Retrieve Top-K Chunks -> LLM;
+    LLM -> Build Prompt;
+    Build Prompt -> LLM;
+    LLM -> Response Output;
+```
+
 ## Installation
 
 ## Usage 
