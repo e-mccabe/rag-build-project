@@ -61,9 +61,19 @@ def rerank(question:str,hits:list[dict],top_n:int = 3) -> list[dict]:
         ]
     )
 
+    ranked_dictionary = _extract_json_block(reranked.choices[0].message.content)
 
+    seen = set()
+    ranked = []
+    for source_index in ranked_dictionary.keys():
+        if 1 <= source_index <= len(hits) and source_index not in seen:
+            seen.add(source_index)
+            ranked.append(hits[source_index-1])
+        if len(ranked) == top_n:
+            break
+    
+    return ranked if ranked else hits[:top_n]
 
-    return reranked.choices[0].message.content
 
 def ask(question: str,**search_kwargs) -> str:
 
@@ -73,12 +83,12 @@ def ask(question: str,**search_kwargs) -> str:
         return {'answer':"I can't have anything in the notes about that",
                 'sources':[]}
     
+    hits = rerank(question,hits)
 
     context_string = _generate_numbered_context_strings(hits)
 
     input = f'User Question: {question}. **Retrieved Context: {context_string}'
-
-    reranked = rerank(question,hits)
+    
 
     response = _client.chat.completions.create(
         model=RESPONSE_MODEL,
