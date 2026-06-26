@@ -16,6 +16,9 @@ wheels/
 #Chromadb
 .chroma/
 
+#md file in notebook folder
+notebooks/*.md
+
 # Visual Studio Related Files
 *.code-workspace
 .vscode
