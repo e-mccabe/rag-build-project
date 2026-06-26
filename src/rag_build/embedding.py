@@ -1,6 +1,6 @@
 """Turning file system text into vectors using OpenAI's embedding model"""
 from openai import OpenAI
-from src.config import EMBEDDING_MODEL
+from rag_build.config import EMBEDDING_MODEL
 
 _client = OpenAI()
 

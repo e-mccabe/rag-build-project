@@ -2,8 +2,8 @@
 import json
 import re
 from openai import OpenAI
-from src.vector_store import search
-from src.config import SYSTEM_PROMPT, RESPONSE_MODEL, RERANK_PROMPT
+from rag_build.vector_store import search
+from rag_build.config import SYSTEM_PROMPT, RESPONSE_MODEL, RERANK_PROMPT
 
 _client = OpenAI()
 
@@ -61,6 +61,8 @@ def rerank(question:str,hits:list[dict],top_n:int = 3) -> list[dict]:
         ]
     )
 
+
+    # Include defensive element if there are issues returning a valid JSON   
     ranked_dictionary = _extract_json_block(reranked.choices[0].message.content)
 
     seen = set()

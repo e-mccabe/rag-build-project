@@ -1,4 +1,4 @@
-"""Loading in the ML Markdown notes"""
+"""Loading in the Corpus (ML Markdown notes)"""
 from pathlib import Path
 from dataclasses import dataclass
 import frontmatter
@@ -12,8 +12,8 @@ class Document:
     metadata: dict
 
 
-# Build a function that loads in all the .md files
 def load_vault(vault_dir:str | Path) -> list[dict]:
+    """Loads the full corpus in and ingests it as a Docmument dataclass to include path, file name, file content & frontmatter metadata"""
 
     vault = Path(vault_dir)
 
@@ -24,9 +24,9 @@ def load_vault(vault_dir:str | Path) -> list[dict]:
         with md_path.open(encoding='utf-8') as f:
             post = frontmatter.load(f)
         
-        content = post.content
-        metadata = post.metadata
-        path = str(md_path.relative_to(vault)).replace("\\",'/')
+        content = post.content #Document Contents
+        metadata = post.metadata 
+        path = str(md_path.relative_to(vault)).replace("\\",'/') # Ensures clean path regardless of operating system
         name = str(metadata.get('title') or md_path.stem)
 
         documents.append(
@@ -35,7 +35,6 @@ def load_vault(vault_dir:str | Path) -> list[dict]:
                      content=content,
                      metadata=metadata)
         )
-
     return documents
 
 
