@@ -2,11 +2,12 @@
 import json
 import re
 from openai import OpenAI
-from rag_build.vector_store import search
-from rag_build.config import SYSTEM_PROMPT, RESPONSE_MODEL, RERANK_PROMPT
+
+from rag_build.utils import _generate_numbered_context_strings
+from rag_build.embedding import embed_texts, get_collection
+from rag_build.config import RESPONSE_MODEL, RERANK_PROMPT
 
 _client = OpenAI()
-
 
 def _extract_json_block(response:str) -> dict:
 
@@ -28,19 +29,33 @@ def _extract_json_block(response:str) -> dict:
 
     return {int(key):value for key,value in scores.items()}
 
-def _generate_numbered_context_strings(hits:list[dict]) -> str:
 
-    context_strings = []
 
-    for i, hit in enumerate(hits,1):
+def search(query: str, top_k: int = 15, where: dict | None = None,contains: dict | None = None,max_distance: float = 0.5) ->list[dict]:
 
-        file = hit['metadata']['file']
-        headings = hit['metadata']['headings'].split(',')
-        breadcrumb = f'<{i} {file}: {' > '.join(headings)}>'
-        full_text = f'{breadcrumb}\n\n{hit['text']}' 
-        context_strings.append(full_text)
 
-    return '\n\n'.join(context_strings)
+    collection = get_collection()
+    query_vector = embed_texts([query])[0]
+
+    if where:
+        results = collection.query(query_embeddings=[query_vector],n_results = top_k,where=where)
+
+    else:
+        results = collection.query(query_embeddings=[query_vector],n_results = top_k)
+
+    query_chunks = []
+
+    for text, metadata, distance in zip(results['documents'][0],results['metadatas'][0],results['distances'][0]):
+
+        query_chunks.append(
+            {
+                'text':text,
+                'metadata':metadata,
+                'distance':distance
+            }
+        )
+ 
+    return query_chunks
 
 
 def rerank(question:str,hits:list[dict],top_n:int = 3) -> list[dict]:
@@ -75,38 +90,6 @@ def rerank(question:str,hits:list[dict],top_n:int = 3) -> list[dict]:
             break
     
     return ranked if ranked else hits[:top_n]
-
-
-def ask(question: str,**search_kwargs) -> str:
-
-    hits = search(query=question,**search_kwargs)
-
-    if not hits:
-        return {'answer':"I can't have anything in the notes about that",
-                'sources':[]}
-    
-    hits = rerank(question,hits)
-
-    context_string = _generate_numbered_context_strings(hits)
-
-    input = f'User Question: {question}. **Retrieved Context: {context_string}'
-    
-
-    response = _client.chat.completions.create(
-        model=RESPONSE_MODEL,
-        max_tokens=500,
-        messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": input}
-        ],
-        )
-    
-    sources = [f'{hit['metadata']['file']} > {hit['metadata']['headings']}' for hit in hits]
-
-    return {
-        'answer':response.choices[0].message.content,
-        'sources':sources
-    }
 
 
 
