@@ -1,6 +1,6 @@
 from openai import OpenAI
 
-from src.config import EMBEDDING_MODEL, RESPONSE_MODEL
+from rag_build.config import EMBEDDING_MODEL, RESPONSE_MODEL
 
 
 def check_openai() -> None:
