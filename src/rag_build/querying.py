@@ -1,6 +1,7 @@
 """Building the logic to use a query to retrieve best matching chunks from chromadb"""
 import json
 import re
+import chromadb
 from openai import OpenAI
 
 from rag_build.utils import _generate_numbered_context_strings
@@ -29,12 +30,17 @@ def _extract_json_block(response:str) -> dict:
 
     return {int(key):value for key,value in scores.items()}
 
+def _inspect_collection(collection:chromadb.Collection)-> None:
+    
+    if collection.count() == 0:
+        raise ValueError (f'Collection {collection.name} is empty')
 
 
 def search(query: str, top_k: int = 15, where: dict | None = None,contains: dict | None = None,max_distance: float = 0.5) ->list[dict]:
 
-
     collection = get_collection()
+    _inspect_collection(collection)
+
     query_vector = embed_texts([query])[0]
 
     if where:
