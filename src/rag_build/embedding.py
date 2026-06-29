@@ -27,6 +27,7 @@ def _flatten_metadata_lists(metadata:dict) -> dict:
 
 def get_collection():
     client = chromadb.PersistentClient(path=PERSIST_DIR)
+
     return client.get_or_create_collection(
         COLLECTION_NAME,
         metadata={'hnsw:space':"cosine"}

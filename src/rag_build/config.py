@@ -91,9 +91,10 @@ Rules:
 """
 
 
-# Each dict maps a natural-language question to the source document that should
-# be retrieved to answer it. The value matches the `source` field in chunk
-# metadata 
+# Each dict maps a natural-language question to the specific chunk that should be
+# retrieved to answer it. The value matches the breadcrumb format produced for a
+# `source` in ask(): "<source path>/<H1>/<H2>/<H3>", Questions are pinned to the section
+# whose text actually contains the answer.
 
 EVALUATION_SET = [
     # 00-Prerequisites

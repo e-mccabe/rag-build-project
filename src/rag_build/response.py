@@ -31,7 +31,7 @@ def ask(question: str,**search_kwargs) -> str:
         ],
         )
     
-    sources = [f'{hit['metadata']['file']} > {hit['metadata']['headings']}' for hit in hits]
+    sources = [f'{hit['metadata']['source']}/{'/'.join(hit['metadata']['headings'].split(','))}' for hit in hits]
 
     return {
         'answer':response.choices[0].message.content,
