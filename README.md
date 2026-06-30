@@ -12,17 +12,19 @@ A simple RAG pipeline built in Python and Streamlit that uses markdown files fro
 
 ## Features
 
--**Loading**
--**Chunking** 
--**Embedding**
--**Vector Storing & Search**
--**Querying**
+- **Loading**
+- **Chunking** 
+- **Embedding**
+- **Vector Storing & Search**
+- **Querying**
+
 
 ### Architecture Flow 
 
+
 ```mermaid
 graph TD;
-    A[Document Corpus] --> B[Loading & Chunking];
+    A[Document Corpus] --> B[Loading and Chunking];
     B --> C[Embedding Chunked Corpus];
     C --> D(Vector Store);
     D --> E[Retrieve Top-K Chunks];
@@ -51,6 +53,16 @@ graph TD;
     style ParentBox fill:#FFF3EE,stroke:#854F0B,color:#412402;
 ```
 
+### Evaluation
+
+| Stage | Purpose | Evaluation Dataset | Evaluation Focus |
+|-------|---------|--------------------|------------------|
+|Development|Experimenting with inputs and system design|Curated offline question sets|Retrieval Accuracy, Response Correctness|
+|Stress Testing|Robustness and safety for production|Edge Cases, red-teamed prompts|Prompt injection resistance, hallucination checks|
+|Monitoring|Measure UX, and detect poor performance|Live Queries|Completeness, safety, refusals|
+|Regression Testing|Prevent silent failures after updates|Curated offline question sets|Test risky scenarios|
+
+
 ## Installation
 
 ## Usage 
@@ -63,4 +75,10 @@ graph TD;
 
 
 ## License
+
+## Elements to be added
+
+- Large Paragraphs logic
+- wikilink used as metadata
+- Error handling when extracting expect JSON block from LLM in rerank()
 
