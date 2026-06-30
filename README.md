@@ -1,8 +1,17 @@
 # RAG Pipeline for Markdown Second Brain
 
-A simple RAG pipeline built in Python and Streamlit that uses markdown files from Obsidian second brain for to improve OpenAI API querying context.
+A question-answering chat bot over a collection of Machine Learning notes. 
+Built as simple RAG pipeline in Python and Streamlit that uses markdown files to improve OpenAI API querying context.
+
+Ask a question in plain english and get an answer grounded in the notes.
+
+#### Web-app Demo
+
+
+
 
 ## Table of Contents
+- Quick Start
 - Features
 - Installation
 - Usage
@@ -10,14 +19,36 @@ A simple RAG pipeline built in Python and Streamlit that uses markdown files fro
 - Contributing 
 - License
 
+
+## Quickstart
+
+Run the project locally in four steps. 
+Requires:
+**Python 3.13** and a paid **OpenAI** API key
+
+```bash
+git clone https://github.com/e-mccabe/rag-build-project.git
+cd rag-build-project
+uv sync # install dependencies
+cp .env.example .env # paste API key into .env
+uv run streamlit run app.py # opens app in browser
+```
+To use a different corpus input your own `.md` files in `/data`.
+
 ## Features
 
-- **Loading**
-- **Chunking** 
-- **Embedding**
-- **Vector Storing & Search**
-- **Querying**
+A three-phase pipeline. **Indexing** turns notes into searchable vectors; **Retrieval** retrieves and ranks information from the searchable database of vectors; **Generation** uses the retrieved information, alongside LLM to generate a response to the input query  
 
+- **Loading** (*src/loading.py*) - load each note to provide the path, file name, metadata and content for each.  
+- **Chunking** (*src/chunking.py*) - split each document using headings to create chunks, keeping metadata.
+- **Embedding** (*src/embeding.py*) - turn each chunk into a vector and store it in a local Chroma.
+- **Retrieval** (*src/querying.py*) - find the closest chunks to the input query and re-order them with an LLM for relevance
+- **Generate** (*src/response.py*) - Provide the LLM with the most relevant/top chunks, a system prompt and the input query. It answers using only those, using citations to the original documents
+
+### Configuration & Limitations
+
+- Tunable in `src/config.py`: LLM models, system prompts, evaluation sets
+- **This is a portfolio project demo by design** made for single-user, no auth, small corpus, local on-disk Chroma.
 
 ### Architecture Flow 
 
@@ -75,6 +106,8 @@ graph TD;
 
 
 ## License
+
+MIT.
 
 ## Elements to be added
 
