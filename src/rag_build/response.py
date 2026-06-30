@@ -7,7 +7,7 @@ from rag_build.config import RESPONSE_MODEL,SYSTEM_PROMPT
 
 _client = OpenAI()
 
-def ask(question: str,**search_kwargs) -> str:
+def retrieval(question:str, **search_kwargs) -> list[str]:
 
     hits = search(query=question,**search_kwargs)
 
@@ -15,12 +15,17 @@ def ask(question: str,**search_kwargs) -> str:
         return {'answer':"I can't have anything in the notes about that",
                 'sources':[]}
     
-    hits = rerank(question,hits)
+    return rerank(question,hits)
+
+
+def ask(question: str,**search_kwargs) -> str:
+
+    hits = retrieval(question,**search_kwargs)
 
     context_string = _generate_numbered_context_strings(hits)
 
-    input = f'User Question: {question}. **Retrieved Context: {context_string}'
-    
+    input =  f'User Question: {question}. **Retrieved Context: {context_string}'
+
 
     response = _client.chat.completions.create(
         model=RESPONSE_MODEL,
@@ -37,3 +42,24 @@ def ask(question: str,**search_kwargs) -> str:
         'answer':response.choices[0].message.content,
         'sources':sources
     }
+
+
+def generate_stream(question: str,hits:list[str]) -> str:
+
+    context_string = _generate_numbered_context_strings(hits)
+
+    input =  f'User Question: {question}. **Retrieved Context: {context_string}'
+
+    stream = _client.chat.completions.create(
+         model=RESPONSE_MODEL,
+        max_tokens=500,
+        messages=[
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": input}
+        ],
+        stream=True
+        )
+    
+    for piece in stream:
+        yield piece
+
