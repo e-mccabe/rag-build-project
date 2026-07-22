@@ -12,7 +12,7 @@ st.title('Ask the second brain')
 st.sidebar.title('Settings')
 st.sidebar.write('Navigation Page')
 
-
+# Building the vector store upon loading and caching it
 @st.cache_resource
 def build_index()-> int:
 
@@ -24,9 +24,9 @@ def build_index()-> int:
 n_chunks = build_index()
 st.caption(f'Indexed {n_chunks} from the vault.')
 
+
 if 'messages' not in st.session_state:
     st.session_state.messages = []
-
 
 for message in st.session_state.messages:
     with st.chat_message(message['role']):
@@ -38,8 +38,6 @@ if prompt := st.chat_input('Ask something'):
     with st.chat_message('user'):
         st.markdown(prompt)
     
-#    response = ask(prompt)['answer']
-#    st.session_state.messages.append({'role':'assistant','content':response})
     with st.chat_message('assistant'):
 
         hits = retrieval(prompt)
