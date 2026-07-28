@@ -8,6 +8,7 @@ from rag_build.config import EMBEDDING_MODEL
 # Anchored to the project root so the store resolves to the same place no matter
 # which directory the caller runs from
 def _find_root(marker = 'pyproject.toml'):
+    """Identifies the project root from whatever directory it is run from"""
     path = Path(__file__).resolve()
     for parent in path.parents:
         if (parent/marker).exists():
@@ -62,7 +63,7 @@ def index_chunks(chunks:list[str]) -> None:
 
     collection.upsert(
         ids         = ids,
-        embeddings  =embeddings,
-        documents   =chunk_texts,
+        embeddings  = embeddings,
+        documents   = chunk_texts,
         metadatas    = metadata
     )
