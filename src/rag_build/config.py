@@ -1,28 +1,49 @@
 """Configuration of project global variables and required key"""
 import os
 from dotenv import load_dotenv
-
+from pathlib import Path
+from dataclasses import dataclass
 
 load_dotenv() # read .env file into the environment
 
+### ========= Helper Functions ========= 
 def _require(name:str) -> str:
     """Runs check if environment variable is available. Fails with clear message if not available"""
     value = os.environ.get(name)
     if not value:
         raise RuntimeError(
             f"Missing {name}. {name} needs to be added to the .env file"
-        )
-    
+        )    
     return value
 
+def _find_root(marker = 'pyproject.toml'):
+    """Identifies the project root from whatever directory it is run from"""
+    path = Path(__file__).resolve()
+    for parent in path.parents:
+        if (parent/marker).exists():
+            return parent
+    raise FileNotFoundError(f'No file: {marker} found above {__file__}')
+
+### ========= Initialise Directories ========= 
+PROJECT_ROOT = _find_root()
+
+@dataclass(frozen=True)
+class Paths:
+    corpus:Path     = PROJECT_ROOT / 'data'
+    eval :Path      = PROJECT_ROOT / 'eval'
+
+DATA_PATH = Paths()
+
+### ========= API KEYS ========= 
 
 OPENAI_API_KEY = _require("OPENAI_API_KEY")
 
-# Project Model Choice 
+### ========= Project Model Choices ========= 
 EMBEDDING_MODEL = 'text-embedding-3-small'
 
 RESPONSE_MODEL = 'gpt-4o-mini'
 
+### ========= Project Prompts =========
 SYSTEM_PROMPT =  """
 **Role & Persona** You are a helpful and highly accurate AI Assistant
 
@@ -33,7 +54,6 @@ SYSTEM_PROMPT =  """
 - Do not use any prior, pre-trained or external knowledge not found in the context.
 - If there is any uncertainty in the provided from the context output it as if it were the absolute truth and include a confidence rating [Low, Medium, High] alongside the answer.  
   
-
 # 2. Hallucination and Fallback
 - If the answer cannot be found in the context blocks, state explicitly: "I cannot find the answer to your questions in the provided context"
 - Never make up information, guess or assume details not explicitly supported by the text.
@@ -90,78 +110,59 @@ Rules:
 </output_format>
 """
 
+EVAL_PROMPT ="""
+**Role & Persona** You are an AI Engineer building a retrieval evaluation set for a RAG system over a corpus of machine learning study notes.
 
-# Each dict maps a natural-language question to the specific chunk that should be
-# retrieved to answer it. The value matches the breadcrumb format produced for a
-# `source` in ask(): "<source path>/<H1>/<H2>/<H3>", Questions are pinned to the section
-# whose text actually contains the answer.
+**Task** You will be given ONE chunk of source text. Write a single question that this chunk answers, plus a reference answer drawn only from that chunk.
 
-EVALUATION_SET = [
-    # 00-Prerequisites
-    {"What does the dot product measure between two vectors?": "00-Prerequisites/LinearAlgebra.md"},
-    {"What are eigenvectors and eigenvalues?": "00-Prerequisites/LinearAlgebra.md"},
-    {"What is the difference between variance and standard deviation?": "00-Prerequisites/Statistics.md"},
-    {"What does a p-value represent in hypothesis testing?": "00-Prerequisites/Statistics.md"},
-    {"What is the difference between nominal and ordinal categorical data?": "00-Prerequisites/TypesOfData.md"},
-    {"How is unstructured data different from structured data?": "00-Prerequisites/TypesOfData.md"},
+# 1. What Makes a Good Question
+- **Self-contained** - The question must stand alone, as if typed cold into a search box by someone who has never seen this chunk. Never refer to "this text", "the passage", "the above", "the context", "the document" or "the section". A question containing any such phrase is invalid.
+- **Answerable from this chunk alone** - Every fact needed to answer must be present in the text you were given. If the chunk is thin, write the best question its content genuinely supports rather than reaching beyond it.
+- **Discriminative** - A good question points at this chunk and no other. Target the specific claim, mechanism, parameter or trade-off that makes this chunk distinct. Avoid questions so generic that a dozen chunks in a machine learning corpus would answer them equally well, e.g. "What is a model?" or "Why is this important?".
+- **Naturally worded** - Phrase it the way a learner revising the topic would actually ask it. Reach for the vocabulary a real user would use, not the chunk's own sentence with a question mark bolted on.
+- **Not a lexical copy** - Do not lift a distinctive phrase from the chunk verbatim. Paraphrase the concept, so the question tests semantic retrieval rather than keyword overlap.
+- **One answer** - Ask about a single idea with a definite answer. No yes/no questions, no compound questions joined by "and", no open-ended invitations to discuss.
+- **About content, not format** - Never ask about headings, bullet counts, document structure, or where something appears.
 
-    # 01-Regression
-    {"What cost function does linear regression minimise?": "01-Regression/LinearRegression.md"},
-    {"How does linear regression use coefficients to make predictions?": "01-Regression/LinearRegression.md"},
-    {"How does polynomial regression model curved relationships?": "01-Regression/PolynomialRegression.md"},
-    {"Why does a high polynomial degree lead to overfitting?": "01-Regression/PolynomialRegression.md"},
-    {"What is the epsilon tube in support vector regression?": "01-Regression/SupportVectorRegression.md"},
-    {"How does support vector regression stay robust to outliers?": "01-Regression/SupportVectorRegression.md"},
+# 2. Vary the Question Type
+Pick whichever type the chunk best supports:
+- **Direct fact lookup** - a definition, value, name or property stated plainly in the text.
+- **Semantic paraphrase** - the answer is in the text, but the question deliberately uses different wording, testing embedding quality rather than string matching.
+- **Mechanism or reasoning** - how something works, or why a described property holds, where the chunk lays out the causal chain.
+- **Comparison or trade-off** - the distinction between two things, or the consequence of a parameter choice, where the chunk covers both sides.
 
-    # 02-Classification
-    {"What function does logistic regression use to output a probability?": "02-Classification/LogisticRegression.md"},
-    {"Why is logistic regression a classification algorithm despite its name?": "02-Classification/LogisticRegression.md"},
-    {"Why is k-nearest neighbours called a lazy learner?": "02-Classification/knn.md"},
-    {"How does the choice of k affect the KNN decision boundary?": "02-Classification/knn.md"},
-    {"How does a support vector machine choose its decision boundary?": "02-Classification/SupportVectorMachines.md"},
-    {"What are support vectors in an SVM?": "02-Classification/SupportVectorMachines.md"},
-    {"What independence assumption does the Naive Bayes classifier make?": "02-Classification/NaiveBayes.md"},
-    {"Why is smoothing needed in Naive Bayes to handle zero probabilities?": "02-Classification/NaiveBayes.md"},
-    {"How does a decision tree decide where to split the data?": "02-Classification/DecisionTrees.md"},
-    {"What is pruning in a decision tree and why is it used?": "02-Classification/DecisionTrees.md"},
-    {"How does bagging work in a random forest?": "02-Classification/RandomForest.md"},
-    {"What is out-of-bag evaluation in a random forest?": "02-Classification/RandomForest.md"},
-    {"What is the Markov assumption in a hidden Markov model?": "02-Classification/HiddenMarkovModels.md"},
-    {"What does the Viterbi algorithm do in a hidden Markov model?": "02-Classification/HiddenMarkovModels.md"},
+# 3. Reference Answer
+- Answer the question fully in one to three sentences.
+- Use only what the chunk states. Never make up information, guess or assume details not explicitly supported by the text.
+- Be direct and concrete. State the answer itself rather than describing where it can be found.
+- Do not cite, quote, or refer to the source text.
+"""
 
-    # 03-Clustering
-    {"How does the k-means algorithm assign points to clusters?": "03-Clustering/K-Means.md"},
-    {"What is the elbow method used for in k-means?": "03-Clustering/K-Means.md"},
-    {"What is a dendrogram in hierarchical clustering?": "03-Clustering/HierarchicalClustering.md"},
-    {"What is the difference between single and complete linkage?": "03-Clustering/HierarchicalClustering.md"},
-    {"How do Gaussian mixture models produce soft cluster assignments?": "03-Clustering/GaussianMixtureModels.md"},
-    {"What is the expectation-maximisation algorithm used for in a GMM?": "03-Clustering/GaussianMixtureModels.md"},
+MULTI_HOP_PROMPT = """
+**Role & Persona** You are an AI Engineer building a multi-hop retrieval evaluation set for a RAG system over a corpus of machine learning study notes.
 
-    # 04-Learning
-    {"What do support, confidence, and lift measure in association rule learning?": "04-Learning/AssociateRule.md"},
-    {"How does the Apriori algorithm prune its search space?": "04-Learning/AssociateRule.md"},
-    {"What is the exploration versus exploitation trade-off in reinforcement learning?": "04-Learning/ReenforcementLearning.md"},
-    {"How does Q-learning learn the value of actions?": "04-Learning/ReenforcementLearning.md"},
+**Task** You will be given TWO OR MORE chunks of source text from different parts of the corpus. Write a single multi-hop question that requires synthesizing information across ALL provided chunks to be answered, along with a reference answer.
 
-    # 05-NaturalLanguageProcessing
-    {"What is TF-IDF and how does it weight words?": "05-NaturalLanguageProcessing/NaturalLanguageProcessing.md"},
-    {"What is tokenisation in natural language processing?": "05-NaturalLanguageProcessing/NaturalLanguageProcessing.md"},
+# 1. What Makes a Good Multi-Hop Question
+- **Requires True Multi-Hop Reasoning** - The question MUST NOT be answerable using only one chunk. Answering it must require connecting a bridge entity, causal chain, or comparative relationship spanning across ALL provided chunks (e.g., Chunk A states Concept X leads to Y; Chunk B states Y affects Z → Question asks how X impacts Z).
+- **Self-contained** - The question must stand alone, as if typed cold into a search box. Never refer to "the passages", "the chunks", "these texts", "the document", or "the provided context".
+- **Discriminative** - Target the specific cross-chunk synthesis, relationship, or trade-off that links these exact notes together. Avoid generic prompts that could apply to any ML topics.
+- **Naturally Worded & Non-Lexical** - Phrase the question as a domain expert or learner naturally would. Paraphrase key concepts rather than copying distinctive phrases verbatim from any of the chunks.
+- **Focused** - Ask a single, cohesive question that requires a combined answer. Do not write a compound question split into disconnected sub-parts (e.g., avoid "What is X, and also what is Y?").
+- **About Content, Not Format** - Never ask about layout, order of chunks, headings, or document structure.
 
-    # 06-DeepLearning
-    {"What does backpropagation do when training a neural network?": "06-DeepLearning/DeepLearning.md"},
-    {"What is the role of an activation function in a neural network?": "06-DeepLearning/DeepLearning.md"},
+# 2. Vary the Reasoning Type
+Select the multi-hop reasoning pattern that best fits the relationship between the chunks:
+- **Chain / Bridge Reasoning** - Chunk A introduces an entity/concept, and Chunk B describes a property or outcome of that concept (A → B → Answer).
+- **Comparison / Synthesis** - Chunk A details Model/Method 1 and Chunk B details Model/Method 2; the question asks to compare, contrast, or combine their trade-offs or constraints.
+- **Constraint / Condition Matching** - Chunk A sets a condition or problem (e.g., high memory overhead), while Chunk B describes an architectural solution or technique that addresses it.
 
-    # 07-DimensionalityReduction
-    {"What is the curse of dimensionality?": "07-DimensionalityReduction/DimensionalityReduction.md"},
-    {"What is the difference between feature selection and feature extraction?": "07-DimensionalityReduction/DimensionalityReduction.md"},
-    {"How does PCA use variance to reduce dimensions?": "07-DimensionalityReduction/PCA.md"},
-    {"Why must features be scaled before applying PCA?": "07-DimensionalityReduction/PCA.md"},
+# 3. Output Requirements
+Provide your response in the following structured format:
 
-    # 08-RecommendationEngines
-    {"What is the cold start problem in recommendation systems?": "08-RecommendationEngines/RecommendationEngines.md"},
-    {"How does collaborative filtering differ from content-based filtering?": "08-RecommendationEngines/RecommendationEngines.md"},
-
-    # 09-ModelSelection
-    {"What is the bias-variance trade-off?": "09-ModelSelection/ModelSelectionAndBoosting.md"},
-    {"How does boosting build models sequentially?": "09-ModelSelection/ModelSelectionAndBoosting.md"},
-]
+- **Question**: The generated multi-hop question.
+- **Reference Answer**: 
+  - 2 to 4 sentences fully answering the question by combining facts from all chunks.
+  - Strict groundedness: Use ONLY facts explicitly present across the provided chunks. Do not hallucinate or fill in outside ML knowledge.
+  - Be direct, self-contained, and do not reference the source chunks or documents.
+"""
