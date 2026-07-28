@@ -1,23 +1,9 @@
 """Turning file system text into vectors using OpenAI's embedding model"""
-from pathlib import Path
-
 import chromadb
 from openai import OpenAI
-from rag_build.config import EMBEDDING_MODEL
-
-# Anchored to the project root so the store resolves to the same place no matter
-# which directory the caller runs from
-def _find_root(marker = 'pyproject.toml'):
-    """Identifies the project root from whatever directory it is run from"""
-    path = Path(__file__).resolve()
-    for parent in path.parents:
-        if (parent/marker).exists():
-            return parent
-    raise FileNotFoundError(f'No file: {marker} found above {__file__}')
-
+from rag_build.config import EMBEDDING_MODEL, _find_root
 
 PERSIST_DIR = _find_root() / ".chroma"
-#PERSIST_DIR = str(Path(__file__).resolve().parents[2] / ".chroma")
 COLLECTION_NAME = "vault_chunks"
 
 _client = OpenAI()
@@ -39,7 +25,6 @@ def embed_texts(texts:list[str]) -> list[list[float]]:
 
     return [item.embedding for item in response.data]
 
-
 def get_collection():
     """calls the chromadb collection"""
     client = chromadb.PersistentClient(path=PERSIST_DIR)
@@ -48,7 +33,6 @@ def get_collection():
         COLLECTION_NAME,
         metadata={'hnsw:space':"cosine"}
     )
-
 
 def index_chunks(chunks:list[str]) -> None:
     """upsert the chunks to chromadb, using document path and the chunk index within the document"""
