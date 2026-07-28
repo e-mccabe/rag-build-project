@@ -24,14 +24,14 @@ def load_vault(vault_dir:str | Path) -> list[dict]:
         with md_path.open(encoding='utf-8') as f:
             post = frontmatter.load(f)
         
-        content = post.content #Document Contents
+        content = post.content 
         metadata = post.metadata 
         path = str(md_path.relative_to(vault)).replace("\\",'/') # Ensures clean path regardless of operating system
-        name = str(metadata.get('title') or md_path.stem)
+        file_name = str(metadata.get('title') or md_path.stem) 
 
         documents.append(
             Document(path = path,
-                     name = name,
+                     name = file_name,
                      content=content,
                      metadata=metadata)
         )
