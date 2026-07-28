@@ -100,9 +100,6 @@ RERANK_PROMPT = """
 
 # 3. Output Format
 <output_format>
-Return ONLY valid minified JSON with no additional text, preamble, or formatting:
-{{"[i]": score, "[i]": score}}
-
 Rules:
 - Keys must be passage IDs in the format [i]
 - Scores must be integers between 0 and 10, no decimals
