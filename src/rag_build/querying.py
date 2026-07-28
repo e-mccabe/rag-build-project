@@ -73,14 +73,14 @@ def rerank(question:str,hits:list[dict],top_n:int = 5) -> list[dict]:
     
     context_string = generate_numbered_context_strings(hits)
 
-    input = f'User Question: {question}. **Retrieved Context: {context_string}'
+    prompt = f'User Question: {question}. **Retrieved Context: {context_string}'
 
     response = _client.chat.completions.parse(
         model = RESPONSE_MODEL,
         max_tokens= 500,
         messages= [
             {'role':'system','content':RERANK_PROMPT},
-            {'role':'user','content':input}
+            {'role':'user','content':prompt}
         ],
         response_format= Response
     )
