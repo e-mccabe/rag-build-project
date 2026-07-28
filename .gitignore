@@ -19,6 +19,9 @@ wheels/
 #md file in notebook folder
 notebooks/*.md
 
+# Ignore Evaluation Dataset
+eval/
+
 # Visual Studio Related Files
 *.code-workspace
 .vscode
