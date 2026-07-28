@@ -1,3 +1,6 @@
+from openai import OpenAI
+from rag_build.config import EMBEDDING_MODEL, RESPONSE_MODEL
+
 def generate_numbered_context_strings(hits:list[dict]) -> str:
     """
     Takes the resulting list of chunks & their meta and creates a single string to pass LLM
@@ -23,3 +26,18 @@ def generate_numbered_context_strings(hits:list[dict]) -> str:
         context_strings.append(full_text)
 
     return '\n\n'.join(context_strings)
+
+def check_openai() -> None:
+
+    client = OpenAI()
+    embed = client.embeddings.create(model = EMBEDDING_MODEL, input= 'Hello World!')
+    dims = len(embed.data[0].embedding)
+    print(f'OpenAI working ({EMBEDDING_MODEL}) - test string embedded in {dims}-dimensional vector')
+
+    resp = client.responses.create(model = RESPONSE_MODEL,
+                                   max_output_tokens= 20,
+                                   input = 'Reply confirming model set up is successful')
+
+    print(f'Open AI ({RESPONSE_MODEL}) is working. Model response{resp.output_text}')
+
+    
