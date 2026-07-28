@@ -1,6 +1,6 @@
 
 
-def _generate_numbered_context_strings(hits:list[dict]) -> str:
+def generate_numbered_context_strings(hits:list[dict]) -> str:
 
     context_strings = []
 
