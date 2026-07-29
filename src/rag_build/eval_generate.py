@@ -10,7 +10,7 @@ from openai import OpenAI
 import random 
 import json
 from rag_build.embedding import get_collection
-from rag_build.config import RESPONSE_MODEL, EVAL_PROMPT, DATA_PATH, MULTI_HOP_PROMPT
+from rag_build.config import RESPONSE_MODEL, EVAL_PROMPT, PATHS, MULTI_HOP_PROMPT
 
 SEED = 10
 ONE_HOP_COUNT = 40
@@ -26,7 +26,7 @@ class QACase(BaseModel):
 
 def write_evaluation_dataset():
 
-    DATA_PATH.eval.mkdir(exist_ok=True, parents=True)
+    PATHS.eval.mkdir(exist_ok=True, parents=True)
 
     single_hop_evals = generate_single_hop_questions(SEED)
 
@@ -36,7 +36,7 @@ def write_evaluation_dataset():
     
     #eval_set = json.dump(sythetic_single_hops)
 
-    with open (DATA_PATH.eval / 'evaluation_set.json','w',encoding = 'utf-8') as f:
+    with open (PATHS.eval / 'evaluation_set.json','w',encoding = 'utf-8') as f:
         json.dump(all_evals,f,indent=2, ensure_ascii=False)
 
 def generate_single_hop_questions(seed:int = SEED):

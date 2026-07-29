@@ -1,3 +1,4 @@
+"""Generate the response output from a users query"""
 from openai import OpenAI
 
 from rag_build.querying import search,rerank

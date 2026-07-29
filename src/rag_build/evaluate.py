@@ -1,12 +1,17 @@
+"""
+Generates evaluation score for the RAG system using the below metrics
+> Recall
+> Precision
+"""
 import pandas as pd
 import json
-from rag_build.config import DATA_PATH
+from rag_build.config import PATHS
 from rag_build.response import ask
 from pathlib import Path
 
-def _load_evaluation_set(path:Path = DATA_PATH):
+def _load_evaluation_set(path:Path = PATHS):
 
-    with open(DATA_PATH.eval / 'evaluation_set.json') as f:
+    with open(PATHS.eval / 'evaluation_set.json') as f:
         eval_set = json.load(f)
     return pd.DataFrame(eval_set)
 

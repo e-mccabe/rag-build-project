@@ -1,4 +1,4 @@
-"""Configuration of project global variables and required key"""
+"""Configuration of project global variables and required keys"""
 import os
 from dotenv import load_dotenv
 from pathlib import Path
@@ -8,7 +8,10 @@ load_dotenv() # read .env file into the environment
 
 ### ========= Helper Functions ========= 
 def _require(name:str) -> str:
-    """Runs check if environment variable is available. Fails with clear message if not available"""
+    """
+    Runs a check whether if environment variables are available. 
+    Fails with clear message if not available
+    """
     value = os.environ.get(name)
     if not value:
         raise RuntimeError(
@@ -16,7 +19,7 @@ def _require(name:str) -> str:
         )    
     return value
 
-def _find_root(marker = 'pyproject.toml'):
+def _find_root(marker: str = 'pyproject.toml') -> Path:
     """Identifies the project root from whatever directory it is run from"""
     path = Path(__file__).resolve()
     for parent in path.parents:
@@ -29,10 +32,10 @@ PROJECT_ROOT = _find_root()
 
 @dataclass(frozen=True)
 class Paths:
-    corpus:Path     = PROJECT_ROOT / 'data'
-    eval :Path      = PROJECT_ROOT / 'eval'
+    corpus  :Path = PROJECT_ROOT / 'data'
+    eval_dir:Path = PROJECT_ROOT / 'eval_dir'
 
-DATA_PATH = Paths()
+PATHS = Paths()
 
 ### ========= API KEYS ========= 
 
@@ -66,7 +69,7 @@ SYSTEM_PROMPT =  """
 # 4. Formatting
 - Present your response in a clear, professional and easy-to-read format.
 - Be direct, concise, and avoid repetitive language.
-- Adhere to the Minto principles, leading with the conclusion/answer first followed by the supporting arguements and ending with underlying data.
+- Adhere to the Minto principles, leading with the conclusion/answer first followed by the supporting arguments and ending with underlying data.
 """
 
 RERANK_PROMPT = """
