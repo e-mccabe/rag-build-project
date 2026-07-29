@@ -3,7 +3,6 @@ __pycache__/
 *.py[oc]
 build/
 dist/
-data/
 wheels/
 *.egg-info
 
@@ -18,9 +17,6 @@ wheels/
 
 #md file in notebook folder
 notebooks/*.md
-
-# Ignore Evaluation Dataset
-eval/
 
 # Visual Studio Related Files
 *.code-workspace
