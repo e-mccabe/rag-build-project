@@ -1,21 +1,88 @@
+# =============================================================================
+# MARKER'S NOTE - pyproject.toml
+# The build config itself is correct - src-layout with hatchling, packages
+# pointed at src/rag_build, pinned Python. That part is done properly.
+# The DEPENDENCY LIST is not accurate, in both directions: four packages are
+# declared but never imported, and two packages that ARE imported are missing.
+# A manifest that does not match reality is a broken install waiting to happen
+# on the next machine that clones this repo.
+# =============================================================================
 [project]
 name = "rag-build"
 version = "0.1.0"
 description = "Add your description here"
+# REVIEW [readability]: placeholder text left from `uv init`. This is the
+# description that appears if the package is ever published or installed, and it
+# is the first thing a reader of the repo sees after the name. Your README opens
+# with a perfectly good one-liner - reuse it.
 readme = "README.md"
 requires-python = ">=3.13"
+# REVIEW [scalability]: 3.13 is a tight floor and it is not clear you need it -
+# the newest syntax in the project is nested same-type quotes in f-strings, which
+# is 3.12+. Requiring the very latest release narrows who can run this (many
+# systems and CI images still default to 3.11/3.12) for no functional gain. If
+# 3.13 is deliberate, say why in a comment; otherwise relax it to ">=3.12".
 dependencies = [
     "chromadb>=1.5.9",
     "claude>=0.4.11",
+    # REVIEW [redundancy] BUG: never imported anywhere in the project. Note also
+    # that `claude` on PyPI is NOT Anthropic's official SDK (that package is
+    # `anthropic`) - this looks like an accidental install of an unrelated
+    # third-party package. Shipping a dependency you did not intend to add, do not
+    # use, and have not vetted is a genuine supply-chain concern, not just clutter.
+    # Remove it.
     "ipykernel>=7.3.0",
+    # REVIEW [readability]: a Jupyter kernel is a DEVELOPMENT tool, not a runtime
+    # requirement - nothing in src/ or app.py needs it, and anyone deploying this
+    # installs it for nothing. Move tooling into an optional group
+    # (`[dependency-groups] dev = [...]`, which uv supports) so the runtime set
+    # stays minimal. Separating runtime from dev dependencies is standard practice
+    # and it is what keeps deployments small and auditable.
     "langchain>=1.3.9",
+    # REVIEW [redundancy] BUG: never imported. langchain is a very heavy
+    # dependency tree to carry for zero use - presumably a leftover from an early
+    # approach before you wrote the pipeline yourself. Remove it.
+    # (For what it is worth, hand-rolling the pipeline was the better choice for a
+    # project meant to demonstrate that you understand RAG. Just drop the import.)
     "numpy>=2.4.6",
+    # REVIEW [redundancy]: never imported directly. It arrives transitively via
+    # chromadb anyway, so declaring it here pins a version you have no reason to
+    # care about. Remove it.
     "openai>=2.41.1",
     "python-dotenv>=1.2.2",
     "python-frontmatter>=1.3.0",
     "streamlit>=1.58.0",
     "tiktoken>=0.13.0",
+    # REVIEW [logic]: declared but never imported. I assume this was added for
+    # token counting during chunking - which is exactly the gap flagged in
+    # chunking.py, where nothing measures chunk size. So this dependency is
+    # evidence you identified the right problem and have not yet acted on it.
+    # Either use it to enforce a token budget, or drop it until you do.
 ]
+# REVIEW [logic] BUG: TWO PACKAGES ARE MISSING. `pandas` (imported by
+# src/rag_build/evaluate.py) and `pydantic` (imported by querying.py and
+# eval_generate.py) do not appear here at all. They work on your machine only
+# because they arrive transitively - pydantic via openai/chromadb, pandas via
+# something in the tree - which is exactly the kind of accident that breaks on a
+# clean install when an upstream package drops the transitive edge. If you import
+# it, declare it. Add both.
+# REVIEW [scalability]: there are NO DEVELOPMENT DEPENDENCIES and, correspondingly,
+# NO TESTS anywhere in the project. This is the single biggest structural gap in
+# the submission and it explains several of the bugs found elsewhere: `PATHS.eval`
+# raises AttributeError in two separate modules, and `index_chunks` is annotated
+# `list[str]` when it takes `list[Chunk]`. Every one of those is caught for free by
+# a smoke test that merely imports each module, or by a type checker. Add:
+#     [dependency-groups]
+#     dev = ["pytest", "ruff", "mypy"]
+# `chunking._split_string_by_headers` in particular is a pure function with
+# interesting edge cases (nested headings, empty sections, code fences) and no
+# external dependencies - it is the ideal place to write your first tests, and it
+# would have caught the buffer-clearing bug flagged in that module.
+# REVIEW [readability]: no linter or formatter configuration. A large share of the
+# comments across this review are spacing, import ordering and unused imports -
+# all of which `ruff` fixes automatically in one command. Adding
+# `[tool.ruff]` here would remove that entire category of feedback from your next
+# review and let a reader focus on the logic.
 
 [build-system]
 requires = ["hatchling"]
@@ -23,3 +90,6 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/rag_build"]
+# REVIEW [readability]: correct src-layout packaging - the package is importable
+# as `rag_build` while the repo root stays clean, which is why your
+# `from rag_build.x import y` imports work consistently everywhere. Well set up.
