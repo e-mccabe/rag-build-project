@@ -40,3 +40,6 @@ demo_embed.py
 # OS-generated files (Mac/Windows clutter from cloning on different OS)
 .DS_Store
 Thumbs.db
+
+# Private working notes - planning docs for my own use, not part of the deliverable
+improvement-plan/
