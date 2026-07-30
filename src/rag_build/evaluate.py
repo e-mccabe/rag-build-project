@@ -1,14 +1,24 @@
-import pandas as pd
+"""
+Generates evaluation score for the RAG system using the below metrics
+> Recall
+> Precision
+"""
 import json
-from rag_build.config import DATA_PATH
-from rag_build.response import ask
 from pathlib import Path
 
-def _load_evaluation_set(path:Path = DATA_PATH):
+import pandas as pd
 
-    with open(DATA_PATH.eval / 'evaluation_set.json') as f:
-        eval_set = json.load(f)
-    return pd.DataFrame(eval_set)
+from rag_build.config import PATHS
+from rag_build.response import ask
+
+
+def _load_evaluation_set(path:Path = PATHS.eval_dir) -> pd.DataFrame:
+    """Load the evaluation set from JSON to a DataFrame.
+    
+    Defaults to the project's eval_set/evaluation_set.json
+    """
+    with open(path / 'evaluation_set.json', encoding= 'utf-8') as f:
+        return pd.DataFrame(json.load(f))
 
 def case_recall(eval_row:pd.Series,response:dict):
 
