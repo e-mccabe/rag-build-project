@@ -1,4 +1,5 @@
 """Load prompt templates from the prompts/ directory at startup"""
+from dataclasses import dataclass
 
 from rag_build.config import PATHS
 
@@ -16,3 +17,13 @@ SYSTEM_PROMPT = _load_prompts('system')
 RERANK_PROMPT = _load_prompts('rerank')
 SINGLE_HOP_PROMPT = _load_prompts('single_hop_eval')
 MULTI_HOP_PROMPT = _load_prompts('multi_hop_eval')
+
+@dataclass(frozen=True)
+class Prompts:
+    """Prompt identifiers by task"""
+    system:     str = SYSTEM_PROMPT
+    rerank:     str = RERANK_PROMPT
+    single_hop: str = SINGLE_HOP_PROMPT
+    multi_hop:  str = MULTI_HOP_PROMPT
+
+PROMPTS = Prompts()

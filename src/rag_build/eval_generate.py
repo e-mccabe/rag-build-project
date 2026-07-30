@@ -16,7 +16,7 @@ from pydantic import BaseModel
 
 from rag_build.config import MODELS, PATHS
 from rag_build.embedding import get_collection
-from rag_build.prompts import MULTI_HOP_PROMPT, SINGLE_HOP_PROMPT
+from rag_build.prompts import PROMPTS
 
 SEED = 10
 SAMPLE_SIZE = 80
@@ -136,7 +136,7 @@ def generate_eval_set(sample_size:int,collection:Collection,seed:int = SEED) -> 
 
         case_type  = 'single-hop' if ix < split_point else 'multi-hop'
 
-        prompt = SINGLE_HOP_PROMPT if case_type == 'single-hop' else MULTI_HOP_PROMPT    
+        prompt = PROMPTS.single_hop if case_type == 'single-hop' else PROMPTS.multi_hop    
 
         entry = _generate_case_triple(
             case_type,'answer',prompt,collection,

@@ -1,7 +1,8 @@
 """Generate the response output from a users query"""
 from openai import OpenAI
 
-from rag_build.config import MODELS, SYSTEM_PROMPT
+from rag_build.config import MODELS
+from rag_build.prompts import PROMPTS
 from rag_build.querying import rerank, search
 from rag_build.utils import generate_numbered_context_strings
 
@@ -37,7 +38,7 @@ def ask(question: str,**search_kwargs) -> dict:
         model=MODELS.response,
         max_tokens=500,
         messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "system", "content": PROMPTS.system},
             {"role": "user", "content": prompt}
         ],
         )
@@ -60,7 +61,7 @@ def generate_stream(question: str,hits:list[dict]):
         model=MODELS.response,
         max_tokens=500,
         messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "system", "content": PROMPTS.system},
             {"role": "user", "content": prompt}
         ],
         stream=True

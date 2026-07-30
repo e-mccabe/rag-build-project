@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 from rag_build.config import MODELS
 from rag_build.embedding import embed_texts, get_collection
-from rag_build.prompts import RERANK_PROMPT
+from rag_build.prompts import PROMPTS
 from rag_build.utils import generate_numbered_context_strings
 
 _client = OpenAI()
@@ -78,7 +78,7 @@ def rerank(question:str,hits:list[dict],top_n:int = 5) -> list[dict]:
         model = MODELS.reranking,
         max_tokens= 500,
         messages= [
-            {'role':'system','content':RERANK_PROMPT},
+            {'role':'system','content':PROMPTS.rerank},
             {'role':'user','content':prompt}
         ],
         response_format= Response
