@@ -1,9 +1,9 @@
-"""Splitting corupus documents into small sections with sufficient content and semantic meaning"""
-
-from dataclasses import dataclass
-from rag_build.loading import Document
+"""Splitting corpus documents into small sections with sufficient content and semantic meaning"""
 
 import re
+from dataclasses import dataclass
+
+from rag_build.loading import Document
 
 HEADING_RE = re.compile(r"^(#{1,4})\s+(.*)$")
 
@@ -11,7 +11,7 @@ HEADING_RE = re.compile(r"^(#{1,4})\s+(.*)$")
 @dataclass
 class Chunk:
     text: str
-    metadata : dict
+    metadata: dict
 
 
 def _split_string_by_headers(content:str) -> list[tuple[list[str],str]]:
@@ -26,9 +26,9 @@ def _split_string_by_headers(content:str) -> list[tuple[list[str],str]]:
 
         heading_match = HEADING_RE.match(line)
         if heading_match:
-            # Select text after the has signs
+            # Select text after the hash signs
             heading_text = heading_match.group(2).strip()
-            # If a heading is hit then take all the take in compiled text as the previous section
+            # If a heading is hit then take all compiled text as the previous section
             text = "\n".join(compiled_text).strip()
             
             if text:
@@ -57,9 +57,8 @@ def _split_string_by_headers(content:str) -> list[tuple[list[str],str]]:
 def chunking_document(document:Document) -> list[Chunk]:
     """Building and indexing the chunk dataclass including the content, metadata and breadcrumb to the section"""
     chunks: list[Chunk] = []
-    document_chunk_index: int  = 0 
 
-    for headings, section in _split_string_by_headers(document.content):
+    for chunk_index, (headings, section) in enumerate(_split_string_by_headers(document.content)):
 
         chunks.append(
             Chunk(
@@ -68,12 +67,11 @@ def chunking_document(document:Document) -> list[Chunk]:
                     "source":document.path,
                     "file":document.name,
                     "headings":headings,
-                    "index":document_chunk_index,
+                    "index":chunk_index,
                     **document.metadata
                 }
                 )
                     )
-        document_chunk_index += 1
     
     return chunks
 
