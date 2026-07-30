@@ -22,8 +22,7 @@ notebooks/*.md
 *.code-workspace
 .vscode
 
-# Demo Files
-demo_embed.py
+improvement-plan/
 
 # Jupyter checkpoint files (auto-generated per notebook, clutters repo)
 .ipynb_checkpoints/
