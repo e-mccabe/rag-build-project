@@ -1,18 +1,20 @@
 """Loading in the Corpus (ML Markdown notes)"""
-from pathlib import Path
 from dataclasses import dataclass
+from pathlib import Path
+
 import frontmatter
+
 
 # Defining the structure for each document
 @dataclass
 class Document:
-    path: str
+    path: str 
     name: str
     content: str
     metadata: dict
 
 def load_vault(vault_dir:str | Path) -> list[Document]:
-    """Loads the full corpus in and ingests it as a Docmument dataclass to include path, file name, file content & frontmatter metadata"""
+    """Loads the full corpus in and ingests it as a Document dataclass to include path, file name, file content & frontmatter metadata"""
 
     vault = Path(vault_dir)
 
