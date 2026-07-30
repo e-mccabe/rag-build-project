@@ -7,6 +7,7 @@ Develop the set as a hybrid of 2 methods
 """ 
 import json
 import random
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Literal, NamedTuple
 
@@ -20,6 +21,9 @@ from rag_build.prompts import PROMPTS
 
 SEED = 10
 SAMPLE_SIZE = 80
+
+# OpenAI calls in flight at once
+MAX_WORKERS = 8 
 
 collection = get_collection()
 _client = OpenAI()
@@ -85,8 +89,9 @@ def _generate_case_triple(case_type:Literal['single-hop','multi-hop'],
             return None
 
         related_id, related_chunk = result
-        
-        chunk_text = f'{chunk.text}\n{related_chunk}'
+
+        # Use Chunk A and B to match instructions in the multi-hop prompts
+        chunk_text = f'Chunk A:\n{chunk.text}\n\nChunk B:\n{related_chunk}'
         sources = [chunk.id,related_id]
 
     else:
@@ -119,35 +124,39 @@ def _generate_case_triple(case_type:Literal['single-hop','multi-hop'],
 
 def generate_eval_set(sample_size:int,collection:Collection,seed:int = SEED) -> list[dict[str,str|list[str]]]:
     """Generate a full evaluation set of QA triple of size n, splitting 50/50 between single and multi hop questions"""
+
     rng = random.Random(seed)
 
     sampled_ids = _sample_chunk_ids(sample_size,collection.get()['ids'],rng)
-
     data = collection.get(ids=sampled_ids)
 
     split_point = sample_size // 2
-    evaluation_set = []
-
+    
+    # Building work items
+    tasks = []
 
     for ix, (chunk_id, chunk_text, metadata) in enumerate(
-        zip(data['ids'],data['documents'],data['metadats'])
+        zip(data['ids'],data['documents'],data['metadatas'])
     ):
         chunk = SampledChunk(id = chunk_id, text = chunk_text,metadata=metadata)
-
         case_type  = 'single-hop' if ix < split_point else 'multi-hop'
-
         prompt = PROMPTS.single_hop if case_type == 'single-hop' else PROMPTS.multi_hop    
 
-        entry = _generate_case_triple(
-            case_type,'answer',prompt,collection,
-            chunk,
-            rng
-        )
+        # Each task gets individual rng so results can be reproduced despite parralel execution order
+        task_rng = random.Random(seed + ix)
+        tasks.append((case_type ,prompt ,chunk ,task_rng))
 
-        if entry is not None:
-            evaluation_set.append(entry)
-    return evaluation_set
+    # Nested function to bundle one task and make API call
+    def run(task):
+        case_type, prompt, chunk, task_rng = task
+        return _generate_case_triple(case_type,'answer',prompt,collection,chunk,task_rng)
+
+
+    # Run all the task calls concurrently
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+        results = executor.map(run,tasks)
+
+    return [entry for entry in results if entry is not None]
 
 if __name__ == '__main__':
-    df = generate_eval_set(40)
-    
+    write_evaluation_dataset()
