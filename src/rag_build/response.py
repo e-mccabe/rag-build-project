@@ -1,8 +1,9 @@
+"""Generate the response output from a users query"""
 from openai import OpenAI
 
-from rag_build.querying import search,rerank
+from rag_build.config import MODELS, SYSTEM_PROMPT
+from rag_build.querying import rerank, search
 from rag_build.utils import generate_numbered_context_strings
-from rag_build.config import RESPONSE_MODEL,SYSTEM_PROMPT
 
 _client = OpenAI()
 
@@ -33,7 +34,7 @@ def ask(question: str,**search_kwargs) -> dict:
 
 
     response = _client.chat.completions.create(
-        model=RESPONSE_MODEL,
+        model=MODELS.response,
         max_tokens=500,
         messages=[
             {"role": "system", "content": SYSTEM_PROMPT},
@@ -56,7 +57,7 @@ def generate_stream(question: str,hits:list[dict]):
     prompt =  f'User Question: {question}. **Retrieved Context: {context_string}'
 
     stream = _client.chat.completions.create(
-         model=RESPONSE_MODEL,
+        model=MODELS.response,
         max_tokens=500,
         messages=[
             {"role": "system", "content": SYSTEM_PROMPT},

@@ -1,13 +1,12 @@
 """Use a user's query/prompt to retrieve the best matching chunks from the vector store (chromadb)"""
-import json
-import re
 import chromadb
-from pydantic import BaseModel
 from openai import OpenAI
+from pydantic import BaseModel
 
-from rag_build.utils import generate_numbered_context_strings
+from rag_build.config import MODELS
 from rag_build.embedding import embed_texts, get_collection
-from rag_build.config import RESPONSE_MODEL, RERANK_PROMPT
+from rag_build.prompts import RERANK_PROMPT
+from rag_build.utils import generate_numbered_context_strings
 
 _client = OpenAI()
 
@@ -76,7 +75,7 @@ def rerank(question:str,hits:list[dict],top_n:int = 5) -> list[dict]:
     prompt = f'User Question: {question}. **Retrieved Context: {context_string}'
 
     response = _client.chat.completions.parse(
-        model = RESPONSE_MODEL,
+        model = MODELS.reranking,
         max_tokens= 500,
         messages= [
             {'role':'system','content':RERANK_PROMPT},
@@ -94,7 +93,7 @@ def rerank(question:str,hits:list[dict],top_n:int = 5) -> list[dict]:
     
     seen = set() # Initialise set to ensure no duplicates
     ranked = []
-    for source_index in reranked.keys():
+    for source_index in reranked:
         if 1 <= source_index <= len(hits) and source_index not in seen:
             seen.add(source_index)
             ranked.append(hits[source_index-1])
@@ -103,9 +102,6 @@ def rerank(question:str,hits:list[dict],top_n:int = 5) -> list[dict]:
 
     
     return ranked if ranked else hits[:top_n]
-
-if __name__ == '__main__':
-    q = 'What is regression'
 
     
 

@@ -1,7 +1,8 @@
 """Turning file system text into vectors using OpenAI's embedding model"""
 import chromadb
 from openai import OpenAI
-from rag_build.config import EMBEDDING_MODEL, _find_root
+
+from rag_build.config import MODELS, _find_root
 
 PERSIST_DIR = _find_root() / ".chroma"
 COLLECTION_NAME = "vault_chunks"
@@ -21,7 +22,7 @@ def _flatten_metadata_lists(metadata:dict) -> dict:
 def embed_texts(texts:list[str]) -> list[list[float]]:
     """Embed many chunks of text in one API call. Returns one vector per input"""
 
-    response = _client.embeddings.create(model = EMBEDDING_MODEL,input=texts)
+    response = _client.embeddings.create(model = MODELS.embedding,input=texts)
 
     return [item.embedding for item in response.data]
 
