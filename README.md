@@ -39,11 +39,11 @@ To use a different corpus input your own `.md` files in `/data`.
 
 A three-phase pipeline. **Indexing** turns notes into searchable vectors; **Retrieval** retrieves and ranks information from the searchable database of vectors; **Generation** uses the retrieved information, alongside LLM to generate a response to the input query  
 
-- **Loading** (*src/loading.py*) - load each note to provide the path, file name, metadata and content for each.  
-- **Chunking** (*src/chunking.py*) - split each document using headings to create chunks, keeping metadata.
-- **Embedding** (*src/embeding.py*) - turn each chunk into a vector and store it in a local Chroma.
-- **Retrieval** (*src/querying.py*) - find the closest chunks to the input query and re-order them with an LLM for relevance
-- **Generate** (*src/response.py*) - Provide the LLM with the most relevant/top chunks, a system prompt and the input query. It answers using only those, using citations to the original documents
+- **Loading** (`src/loading.py`) - load each note to provide the path, file name, metadata and content for each.  
+- **Chunking** (`src/chunking.py`) - split each document using headings to create chunks, keeping metadata.
+- **Embedding** (`src/embeding.py`) - turn each chunk into a vector and store it in a local Chroma.
+- **Retrieval** (`src/querying.py`) - find the closest chunks to the input query and re-order them with an LLM for relevance
+- **Generate** (`src/response.py`) - Provide the LLM with the most relevant/top chunks, a system prompt and the input query. It answers using only those, using citations to the original documents
 
 ### Configuration & Limitations
 
@@ -107,7 +107,6 @@ graph TD;
 
 ## License
 
-MIT.
 
 ## Elements to be added
 
