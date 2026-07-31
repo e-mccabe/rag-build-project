@@ -9,7 +9,8 @@ from pathlib import Path
 import pandas as pd
 
 from rag_build.config import PATHS
-from rag_build.response import ask
+from rag_build.metrics import precision_at_k, recall_at_k, reciprocal_rank
+from rag_build.response import retrieval
 
 
 def _load_evaluation_set(path:Path = PATHS.eval_dir) -> pd.DataFrame:
@@ -18,44 +19,38 @@ def _load_evaluation_set(path:Path = PATHS.eval_dir) -> pd.DataFrame:
     Defaults to the project's eval_set/evaluation_set.json
     """
     with open(path / 'evaluation_set.json', encoding= 'utf-8') as f:
-        return pd.DataFrame(json.load(f))
+        df = pd.DataFrame(json.load(f))
 
-def case_recall(eval_row:pd.Series,response:dict):
+    df['sources'] = df['sources'].apply(set)
+    return df
 
-    retrieved_chunks = response['ids']
+def run_evaluation(k:int):
 
-    print(f'\nRetrieved Chunks: {retrieved_chunks}')
-    # The relevant chunks for the questions
-    ground_truth = set(eval_row.get('sources',[]))
-    print(f'\nRelevant Chunks: {ground_truth}\n')
+    eval_df = _load_evaluation_set()
 
-#    if not ground_truth:
-#        return 0.0
-    
-    retrieved_set = set(retrieved_chunks)
-    relevant_retrieved = ground_truth.intersection(retrieved_set)
+    eval_results = []
 
-    recall = len(relevant_retrieved)/len(ground_truth) if ground_truth else 0.0
+    for _, row in eval_df.iterrows():
+        retrieved_chunks = retrieval(row.question)
+        retrieved = [chunk['id'] for chunk in retrieved_chunks]
+        recall = recall_at_k(retrieved,row.sources,k)
+        precision = precision_at_k(retrieved,row.sources,k) 
+        rr = reciprocal_rank(retrieved,row.sources)
 
-    precision = len(relevant_retrieved) / len(retrieved_chunks) if retrieved_chunks else 0.0
+        result = {
+            'id':row.type,
+            'question':row.question,
+            'sources':row.sources,
+            'retrieved':retrieved,
+            f'recall@{k}':recall,
+            f'precision@{k}':precision,
+            'reciprocal-rank':rr
+        }
+        eval_results.append(result)
 
-    return round(recall,5), round(precision,5)
+    return pd.DataFrame(eval_results)
 
-def evaluate(eval_set:pd.DataFrame):
-
-    results = []
-
-    for _,row in eval_set.iterrows():
-        response = ask(row.question)
-
-        recall,precision = case_recall(row,response)
-        result = {'id':row.id,'recall':recall,'precision':precision}
-        results.append(result)
-
-    return pd.DataFrame(results)
 
 if __name__ == '__main__':
-    df = _load_evaluation_set()
-    df = df.iloc[:4].copy()
-    print(evaluate(df))
-
+    df = run_evaluation(10)
+    df.to_csv(PATHS.eval_dir / 'test.csv')
