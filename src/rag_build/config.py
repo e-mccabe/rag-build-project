@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
 
+from anthropic import Anthropic
 from dotenv import load_dotenv
 from openai import OpenAI
 
@@ -57,7 +58,7 @@ class Models:
 MODELS = Models()
 
 ### ======================================================
-###                  OpenAI Client
+###                  LLM Clients
 ### ======================================================
 
 @lru_cache(maxsize=1)
@@ -65,4 +66,7 @@ def get_openai_client() -> OpenAI:
     """Build the OpenAI client on first use, reusing the same client elsewhere"""
     return OpenAI(api_key=_require("OPENAI_API_KEY"))
 
-
+@lru_cache(maxsize=1)
+def get_anthropic_client() -> Anthropic:
+    """Build the Anthropic client on first use, reusing the same client elsewhere"""
+    return Anthropic(api_key=_require("ANTHROPIC_API_KEY"))
