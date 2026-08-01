@@ -26,18 +26,3 @@ def generate_numbered_context_strings(hits:list[dict]) -> str:
         context_strings.append(full_text)
 
     return '\n\n'.join(context_strings)
-
-def check_openai() -> None:
-
-
-    embed = get_openai_client().embeddings.create(model = MODELS.embedding, input= 'Hello World!')
-    dims = len(embed.data[0].embedding)
-    print(f'OpenAI working ({MODELS.embedding}) - test string embedded in {dims}-dimensional vector')
-
-    resp = get_openai_client().responses.create(model = MODELS.response,
-                                   max_output_tokens= 20,
-                                   input = 'Reply confirming model set up is successful')
-
-    print(f'Open AI ({MODELS.response}) is working. Model response{resp.output_text}')
-
-    
