@@ -50,10 +50,13 @@ PATHS = Paths()
 
 @dataclass(frozen=True)
 class Models:
-    """Model identifiers grouped by pipeline role"""
-    embedding:  str = 'text-embedding-3-small'
-    response:   str = 'gpt-4o-mini'
-    reranking:  str = 'gpt-4o'
+    """
+    Model identifiers grouped by pipeline role
+    > models should be labelled as provider:model
+    """
+    embedding:  str = 'openai:text-embedding-3-small'
+    response:   str = 'openai:gpt-4o-mini'
+    reranking:  str = 'openai:gpt-4o'
 
 MODELS = Models()
 
