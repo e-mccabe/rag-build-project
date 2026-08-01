@@ -2,8 +2,8 @@
 import chromadb
 from pydantic import BaseModel
 
-from rag_build.config import MODELS, get_openai_client
 from rag_build.embedding import embed_texts, get_collection
+from rag_build.llm import AI
 from rag_build.prompts import PROMPTS
 from rag_build.utils import generate_numbered_context_strings
 
@@ -72,16 +72,10 @@ def rerank(question:str,hits:list[dict],top_n:int = 5) -> list[dict]:
 
     prompt = f'User Question: {question}. **Retrieved Context: {context_string}'
 
-    response = get_openai_client().chat.completions.parse(
-        model = MODELS.reranking,
-        max_tokens= 500,
-        messages= [
-            {'role':'system','content':PROMPTS.rerank},
-            {'role':'user','content':prompt}
-        ],
-        response_format= Response
-    )
-    case = response.choices[0].message.parsed
+    case = AI.generate_rerank(prompt,PROMPTS.rerank,Response)
+
+    if case is None:
+        return hits[:top_n]
 
     # Build a dictionary ordered by rank score and using original id keys
     reranked = {id:score for id,score in sorted(zip(case.chunk_ids,case.chunk_ranks),

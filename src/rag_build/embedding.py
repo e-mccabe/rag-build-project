@@ -3,7 +3,8 @@ from functools import lru_cache
 
 import chromadb
 
-from rag_build.config import MODELS, _find_root, get_openai_client
+from rag_build.config import _find_root
+from rag_build.llm import AI
 
 PERSIST_DIR = _find_root() / ".chroma"
 COLLECTION_NAME = "vault_chunks"
@@ -21,9 +22,7 @@ def _flatten_metadata_lists(metadata:dict) -> dict:
 def embed_texts(texts:list[str]) -> list[list[float]]:
     """Embed many chunks of text in one API call. Returns one vector per input"""
 
-    response = get_openai_client().embeddings.create(model = MODELS.embedding,input=texts)
-
-    return [item.embedding for item in response.data]
+    return AI.generate_embeddings(texts)
 
 @lru_cache(maxsize=1)
 def get_collection():

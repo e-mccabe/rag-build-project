@@ -14,8 +14,9 @@ from typing import Literal, NamedTuple
 from chromadb import Collection
 from pydantic import BaseModel
 
-from rag_build.config import MODELS, PATHS, get_openai_client
+from rag_build.config import PATHS
 from rag_build.embedding import get_collection
+from rag_build.llm import AI
 from rag_build.prompts import PROMPTS
 
 SEED = 10
@@ -95,17 +96,7 @@ def _generate_case_triple(case_type:Literal['single-hop','multi-hop'],
         sources = [chunk.id]
 
     # Generate Question and Answer using OpenAI and defined response format
-    response = get_openai_client().chat.completions.parse(
-        model= MODELS.response,
-        max_completion_tokens= 500,
-        messages= [
-            {'role':'system','content':prompt},
-            {'role':'user','content':chunk_text}
-        ],
-        response_format= QACase
-    )
-
-    case = response.choices[0].message.parsed
+    case = AI.generate_eval_case(chunk_text,prompt,QACase)
 
     if case is None:
         return None
