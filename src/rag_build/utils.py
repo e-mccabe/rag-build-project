@@ -1,6 +1,4 @@
-from openai import OpenAI
-
-from rag_build.config import MODELS
+from rag_build.config import MODELS, get_openai_client
 
 
 def generate_numbered_context_strings(hits:list[dict]) -> str:
@@ -31,12 +29,12 @@ def generate_numbered_context_strings(hits:list[dict]) -> str:
 
 def check_openai() -> None:
 
-    client = OpenAI()
-    embed = client.embeddings.create(model = MODELS.embedding, input= 'Hello World!')
+
+    embed = get_openai_client().embeddings.create(model = MODELS.embedding, input= 'Hello World!')
     dims = len(embed.data[0].embedding)
     print(f'OpenAI working ({MODELS.embedding}) - test string embedded in {dims}-dimensional vector')
 
-    resp = client.responses.create(model = MODELS.response,
+    resp = get_openai_client().responses.create(model = MODELS.response,
                                    max_output_tokens= 20,
                                    input = 'Reply confirming model set up is successful')
 

@@ -1,12 +1,10 @@
 """Generate the response output from a users query"""
-from openai import OpenAI
 
-from rag_build.config import MODELS
+from rag_build.config import MODELS, get_openai_client
 from rag_build.prompts import PROMPTS
 from rag_build.querying import rerank, search
 from rag_build.utils import generate_numbered_context_strings
 
-_client = OpenAI()
 
 def retrieval(question:str, **search_kwargs) -> list[dict]:
     """Based of user query generate the relevant chunks for the vector database"""
@@ -36,7 +34,7 @@ def ask(question: str,**search_kwargs) -> dict:
     prompt =  f'User Question: {question}. **Retrieved Context: {context_string}'
 
 
-    response = _client.chat.completions.create(
+    response = get_openai_client().chat.completions.create(
         model=MODELS.response,
         max_tokens=500,
         messages=[
@@ -59,7 +57,7 @@ def generate_stream(question: str,hits:list[dict]):
 
     prompt =  f'User Question: {question}. **Retrieved Context: {context_string}'
 
-    stream = _client.chat.completions.create(
+    stream = get_openai_client().chat.completions.create(
         model=MODELS.response,
         max_tokens=500,
         messages=[

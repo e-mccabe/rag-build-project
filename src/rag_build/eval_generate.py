@@ -12,10 +12,9 @@ from pathlib import Path
 from typing import Literal, NamedTuple
 
 from chromadb import Collection
-from openai import OpenAI
 from pydantic import BaseModel
 
-from rag_build.config import MODELS, PATHS
+from rag_build.config import MODELS, PATHS, get_openai_client
 from rag_build.embedding import get_collection
 from rag_build.prompts import PROMPTS
 
@@ -24,9 +23,6 @@ SAMPLE_SIZE = 80
 
 # OpenAI calls in flight at once
 MAX_WORKERS = 8 
-
-collection = get_collection()
-_client = OpenAI()
 
 # Specify format for OpenAI response
 class QACase(BaseModel):
@@ -43,7 +39,7 @@ def write_evaluation_dataset(path:Path = PATHS.eval_dir)-> None:
     """Writes the generated evaluation questions to a json file"""
     path.mkdir(exist_ok=True, parents=True)
 
-    all_evals = generate_eval_set(SAMPLE_SIZE,collection)
+    all_evals = generate_eval_set(SAMPLE_SIZE,get_collection())
     with open (path / 'evaluation_set.json','w',encoding = 'utf-8') as f:
         json.dump(all_evals,f,indent=2, ensure_ascii=False)
 
@@ -99,7 +95,7 @@ def _generate_case_triple(case_type:Literal['single-hop','multi-hop'],
         sources = [chunk.id]
 
     # Generate Question and Answer using OpenAI and defined response format
-    response = _client.chat.completions.parse(
+    response = get_openai_client().chat.completions.parse(
         model= MODELS.response,
         max_completion_tokens= 500,
         messages= [

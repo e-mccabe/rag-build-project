@@ -1,14 +1,12 @@
 """Use a user's query/prompt to retrieve the best matching chunks from the vector store (chromadb)"""
 import chromadb
-from openai import OpenAI
 from pydantic import BaseModel
 
-from rag_build.config import MODELS
+from rag_build.config import MODELS, get_openai_client
 from rag_build.embedding import embed_texts, get_collection
 from rag_build.prompts import PROMPTS
 from rag_build.utils import generate_numbered_context_strings
 
-_client = OpenAI()
 
 # Define response structure for OpenAI response
 class Response(BaseModel):
@@ -74,7 +72,7 @@ def rerank(question:str,hits:list[dict],top_n:int = 5) -> list[dict]:
 
     prompt = f'User Question: {question}. **Retrieved Context: {context_string}'
 
-    response = _client.chat.completions.parse(
+    response = get_openai_client().chat.completions.parse(
         model = MODELS.reranking,
         max_tokens= 500,
         messages= [
