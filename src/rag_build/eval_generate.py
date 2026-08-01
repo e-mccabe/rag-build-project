@@ -117,7 +117,7 @@ def generate_eval_set(sample_size:int,collection:Collection,seed:int = SEED) -> 
     sampled_ids = _sample_chunk_ids(sample_size,collection.get()['ids'],rng)
     data = collection.get(ids=sampled_ids)
 
-    split_point = sample_size // 2
+    split_point = len(sampled_ids) // 2
     
     # Building work items
     tasks = []

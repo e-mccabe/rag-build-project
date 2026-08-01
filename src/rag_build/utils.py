@@ -1,5 +1,3 @@
-from rag_build.config import MODELS, get_openai_client
-
 
 def generate_numbered_context_strings(hits:list[dict]) -> str:
     """

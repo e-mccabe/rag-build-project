@@ -16,11 +16,11 @@ def retrieval(question:str, **search_kwargs) -> list[dict]:
     
     return hits
 
-def ask(question: str,**search_kwargs) -> dict:
+def ask(question: str,top_n:int = 5,**search_kwargs) -> dict:
 
     full_hits = retrieval(question, **search_kwargs)
 
-    hits = rerank(question,full_hits,**search_kwargs)
+    hits = rerank(question,full_hits,top_n=top_n)
 
     if not hits:
         return {

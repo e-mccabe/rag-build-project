@@ -86,7 +86,7 @@ class AiClient:
         if provider == 'openai':
             return self._get_openai_structured(model,self.max_tokens,message,system,structure)
 
-        raise ValueError(f'No model found for {self.reranking}, enter a valid anthropic or openai model, in the format openai:gpt4o')
+        raise ValueError(f'No model found for {self.response}, enter a valid anthropic or openai model, in the format openai:gpt4o')
 
     def generate_embeddings(self,input_text:list[str]) -> list[list[float]]:
         """Embed many strings in one API call, returning one vector per input.

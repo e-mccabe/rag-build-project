@@ -2,7 +2,7 @@
 def recall_at_k(retrieved:list[str],ground_truth:set[str],k:int)-> float:
     """Takes a ranked list & ground truth and produces recall value"""
 
-    if ground_truth is None:
+    if not ground_truth:
         return 0.0
 
     return len(ground_truth & set(retrieved[:k]))/len(ground_truth)
@@ -12,7 +12,7 @@ def precision_at_k(retrieved:list[str],ground_truth:set[str],k:int)-> float:
 
     top = retrieved[:k]
 
-    if top is None:
+    if not top :
         return 0.0
 
     return len(ground_truth & set(top))/len(top)
