@@ -1,10 +1,10 @@
 import streamlit as st
 
-from rag_build.loading import load_vault
 from rag_build.chunking import chunk_all_documents
+from rag_build.config import PATHS
 from rag_build.embedding import index_chunks
-from rag_build.response import retrieval, generate_stream
-
+from rag_build.loading import load_vault
+from rag_build.response import generate_stream, retrieval
 
 st.set_page_config(page_title='Second Brain Assistant',page_icon='~',initial_sidebar_state='expanded')
 st.title('Ask the second brain')
@@ -16,7 +16,7 @@ st.sidebar.write('Navigation Page')
 @st.cache_resource
 def build_index()-> int:
 
-    documents = load_vault('data')
+    documents = load_vault(PATHS.corpus)
     chunks = chunk_all_documents(documents)
     index_chunks(chunks)
     return len(chunks)
