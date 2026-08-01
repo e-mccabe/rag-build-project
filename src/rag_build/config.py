@@ -1,11 +1,13 @@
 """Project Configuration: paths, model choices, required secrets"""
 import os
 from dataclasses import dataclass
+from functools import lru_cache
 from pathlib import Path
 
 from dotenv import load_dotenv
+from openai import OpenAI
 
-load_dotenv() # read .env file into the environment
+load_dotenv(override=False) # read .env file into the environment
 
 ### ======================================================
 ###                Helper Functions
@@ -55,12 +57,12 @@ class Models:
 MODELS = Models()
 
 ### ======================================================
-###                    API Keys
+###                  OpenAI Client
 ### ======================================================
 
-@dataclass(frozen=True)
-class Keys:
-    openai: str = _require("OPENAI_API_KEY")
+@lru_cache(maxsize=1)
+def get_openai_client() -> OpenAI:
+    """Build the OpenAI client on first use, reusing the same client elsewhere"""
+    return OpenAI(api_key=_require("OPENAI_API_KEY"))
 
 
-KEYS = Keys()
