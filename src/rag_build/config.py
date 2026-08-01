@@ -58,9 +58,3 @@ MODELS = Models()
 ###                    API Keys
 ### ======================================================
 
-@dataclass(frozen=True)
-class Keys:
-    openai: str = _require("OPENAI_API_KEY")
-
-
-KEYS = Keys()

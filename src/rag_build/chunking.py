@@ -53,7 +53,6 @@ def _split_string_by_headers(content:str) -> list[tuple[list[str],str]]:
 
     return sections
             
-
 def chunking_document(document:Document) -> list[Chunk]:
     """Building and indexing the chunk dataclass including the content, metadata and breadcrumb to the section"""
     chunks: list[Chunk] = []
