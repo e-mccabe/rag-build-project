@@ -1,12 +1,10 @@
 """Generate the response output from a users query"""
-from openai import OpenAI
 
-from rag_build.config import MODELS
+from rag_build.llm import AI
 from rag_build.prompts import PROMPTS
 from rag_build.querying import rerank, search
 from rag_build.utils import generate_numbered_context_strings
 
-_client = OpenAI()
 
 def retrieval(question:str, **search_kwargs) -> list[dict]:
     """Based of user query generate the relevant chunks for the vector database"""
@@ -18,11 +16,11 @@ def retrieval(question:str, **search_kwargs) -> list[dict]:
     
     return hits
 
-def ask(question: str,**search_kwargs) -> dict:
+def ask(question: str,top_n:int = 5,**search_kwargs) -> dict:
 
     full_hits = retrieval(question, **search_kwargs)
 
-    hits = rerank(question,full_hits,**search_kwargs)
+    hits = rerank(question,full_hits,top_n=top_n)
 
     if not hits:
         return {
@@ -35,20 +33,12 @@ def ask(question: str,**search_kwargs) -> dict:
 
     prompt =  f'User Question: {question}. **Retrieved Context: {context_string}'
 
-
-    response = _client.chat.completions.create(
-        model=MODELS.response,
-        max_tokens=500,
-        messages=[
-            {"role": "system", "content": PROMPTS.system},
-            {"role": "user", "content": prompt}
-        ],
-        )
+    answer = AI.generate_text(prompt,PROMPTS.system)
     
     sources = [f'{hit['metadata']['source']}/{'/'.join(hit['metadata']['headings'].split(','))}' for hit in hits]
     ids = [hit['id'] for hit in hits]
     return {
-        'answer':response.choices[0].message.content,
+        'answer':answer,
         'sources':sources,
         'ids':ids
     }
@@ -59,15 +49,4 @@ def generate_stream(question: str,hits:list[dict]):
 
     prompt =  f'User Question: {question}. **Retrieved Context: {context_string}'
 
-    stream = _client.chat.completions.create(
-        model=MODELS.response,
-        max_tokens=500,
-        messages=[
-            {"role": "system", "content": PROMPTS.system},
-            {"role": "user", "content": prompt}
-        ],
-        stream=True
-        )
-    
-    for piece in stream:
-        yield piece
+    yield from AI.generate_stream(prompt, PROMPTS.system)

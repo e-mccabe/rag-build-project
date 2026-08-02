@@ -5,6 +5,7 @@ description = "A retrieval-augmented QA pipeline over a markdown knowledge base,
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "anthropic>=0.120.2",
     "chromadb>=1.5.9",
     "ipykernel>=7.3.0",
     "numpy>=2.4.6",

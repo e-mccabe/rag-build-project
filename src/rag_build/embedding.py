@@ -1,13 +1,13 @@
 """Turning file system text into vectors using OpenAI's embedding model"""
-import chromadb
-from openai import OpenAI
+from functools import lru_cache
 
-from rag_build.config import MODELS, _find_root
+import chromadb
+
+from rag_build.config import _find_root
+from rag_build.llm import AI
 
 PERSIST_DIR = _find_root() / ".chroma"
 COLLECTION_NAME = "vault_chunks"
-
-_client = OpenAI()
 
 
 def _flatten_metadata_lists(metadata:dict) -> dict:
@@ -22,12 +22,11 @@ def _flatten_metadata_lists(metadata:dict) -> dict:
 def embed_texts(texts:list[str]) -> list[list[float]]:
     """Embed many chunks of text in one API call. Returns one vector per input"""
 
-    response = _client.embeddings.create(model = MODELS.embedding,input=texts)
+    return AI.generate_embeddings(texts)
 
-    return [item.embedding for item in response.data]
-
+@lru_cache(maxsize=1)
 def get_collection():
-    """calls the chromadb collection"""
+    """Open the chromadb collection on first use, then reuse that handle"""
     client = chromadb.PersistentClient(path=PERSIST_DIR)
 
     return client.get_or_create_collection(

@@ -48,7 +48,7 @@ def _split_string_by_headers(content:str) -> list[tuple[list[str],str]]:
 
     # Compile anything remaining in compiled text to a full piece of text
     text = "\n".join(compiled_text).strip()
-    if text or heading_stack:
+    if text:
         sections.append((heading_stack,text))
 
     return sections

@@ -1,11 +1,14 @@
 """Project Configuration: paths, model choices, required secrets"""
 import os
 from dataclasses import dataclass
+from functools import lru_cache
 from pathlib import Path
 
+from anthropic import Anthropic
 from dotenv import load_dotenv
+from openai import OpenAI
 
-load_dotenv() # read .env file into the environment
+load_dotenv(override=False) # read .env file into the environment
 
 ### ======================================================
 ###                Helper Functions
@@ -47,14 +50,26 @@ PATHS = Paths()
 
 @dataclass(frozen=True)
 class Models:
-    """Model identifiers grouped by pipeline role"""
-    embedding:  str = 'text-embedding-3-small'
-    response:   str = 'gpt-4o-mini'
-    reranking:  str = 'gpt-4o'
+    """
+    Model identifiers grouped by pipeline role
+    > models should be labelled as provider:model
+    """
+    embedding:  str = 'openai:text-embedding-3-small'
+    response:   str = 'openai:gpt-4o-mini'
+    reranking:  str = 'openai:gpt-4o'
 
 MODELS = Models()
 
 ### ======================================================
-###                    API Keys
+###                  LLM Clients
 ### ======================================================
 
+@lru_cache(maxsize=1)
+def get_openai_client() -> OpenAI:
+    """Build the OpenAI client on first use, reusing the same client elsewhere"""
+    return OpenAI(api_key=_require("OPENAI_API_KEY"))
+
+@lru_cache(maxsize=1)
+def get_anthropic_client() -> Anthropic:
+    """Build the Anthropic client on first use, reusing the same client elsewhere"""
+    return Anthropic(api_key=_require("ANTHROPIC_API_KEY"))
