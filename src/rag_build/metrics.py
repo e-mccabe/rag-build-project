@@ -28,6 +28,14 @@ def reciprocal_rank(retrieved: list[str],ground_truth: set[str]):
     return 0.0
 
 
+def score_ranking(retrieved:list[str], ground_truth:set[str], k_values:tuple[int])-> dict[str,float]:
+
+    scores = {'mrr': reciprocal_rank(retrieved,ground_truth)}
+    for k in k_values:
+        scores[f'recall@{k}'] = recall_at_k(retrieved,ground_truth,k)
+        scores[f'precision@{k}'] = precision_at_k(retrieved,ground_truth,k)
+
+    return scores
 
 
     
