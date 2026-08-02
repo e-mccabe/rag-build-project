@@ -9,8 +9,8 @@ from pathlib import Path
 import pandas as pd
 
 from rag_build.config import PATHS
-from rag_build.metrics import precision_at_k, recall_at_k, reciprocal_rank
-from rag_build.response import retrieval
+from rag_build.metrics import score_ranking
+from rag_build.response import rerank, retrieval
 
 
 def _load_evaluation_set(path:Path = PATHS.eval_dir) -> pd.DataFrame:
@@ -24,7 +24,8 @@ def _load_evaluation_set(path:Path = PATHS.eval_dir) -> pd.DataFrame:
     df['sources'] = df['sources'].apply(set)
     return df
 
-def run_evaluation(k:int):
+
+def run_retrieval_evaluation(k_values:tuple[int],rank:bool = False)-> list[dict[str,float]]:
 
     eval_df = _load_evaluation_set()
 
@@ -32,25 +33,26 @@ def run_evaluation(k:int):
 
     for _, row in eval_df.iterrows():
         retrieved_chunks = retrieval(row.question)
-        retrieved = [chunk['id'] for chunk in retrieved_chunks]
-        recall = recall_at_k(retrieved,row.sources,k)
-        precision = precision_at_k(retrieved,row.sources,k) 
-        rr = reciprocal_rank(retrieved,row.sources)
+        if rank:
+            retrieved_chunks = rerank(retrieved_chunks)
 
-        result = {
-            'id':row.type,
-            'question':row.question,
-            'sources':row.sources,
-            'retrieved':retrieved,
-            f'recall@{k}':recall,
-            f'precision@{k}':precision,
-            'reciprocal-rank':rr
-        }
-        eval_results.append(result)
+        retrieved = [chunk['id'] for chunk in retrieved_chunks]
+        scores = score_ranking(retrieved,row.sources,k_values)
+
+        scores['type'] = row.type
+        scores['answer_mode'] = row.answer_mode
+        
+        eval_results.append(scores)
 
     return pd.DataFrame(eval_results)
 
 
-if __name__ == '__main__':
-    df = run_evaluation(10)
-    df.to_csv(PATHS.eval_dir / 'test.csv')
+def summarise_results(df:pd.DataFrame)->pd.DataFrame:
+
+    metric_cols = [c for c in df.columns if c.startswith(('recall', 'precision','mrr'))]
+    overall = df[metric_cols].mean().to_frame('overall')
+    by_type = df.groupby('type')[metric_cols].mean().T
+
+    return overall.join(by_type)
+
+    
