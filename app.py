@@ -4,7 +4,7 @@ from rag_build.chunking import chunk_all_documents
 from rag_build.config import PATHS
 from rag_build.embedding import index_chunks
 from rag_build.loading import load_vault
-from rag_build.response import generate_stream, retrieval
+from rag_build.response import NO_ANSWER, format_sources, generate_stream, retrieval
 
 st.set_page_config(page_title='Second Brain Assistant',page_icon='~',initial_sidebar_state='expanded')
 st.title('Ask the second brain')
@@ -42,18 +42,13 @@ if prompt := st.chat_input('Ask something'):
 
         hits = retrieval(prompt)
         if not hits:
-            answer = "I don't have anything in the corpus about that."
+            answer = NO_ANSWER
             st.markdown(answer)
             sources = []
         
         else:
             answer = st.write_stream(generate_stream(prompt,hits))
-    
+            sources = format_sources(hits)
+            with st.expander('Sources'):
+                st.markdown(f'{'\n\n'.join(set(sources))}')
     st.session_state.messages.append({'role':'assistant','content':answer})
-
-#        st.markdown(response)
-
-
-
-
-
