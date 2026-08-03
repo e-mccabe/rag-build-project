@@ -18,14 +18,13 @@ def _inspect_collection(collection:chromadb.Collection)-> None:
     if collection.count() == 0:
         raise ValueError (f'Collection {collection.name} is empty')
 
-def search(query: str, top_k: int = 15, where: dict | None = None,contains: dict | None = None,max_distance: float = 0.8) ->list[dict]:
+def search(query: str, top_k: int = 15, where: dict | None = None,max_distance: float = 0.8) ->list[dict]:
     """
     Using user query, search vector database to find the top k results by semantic similarity
     
     > top_k         : how many results to draw from the vector database
     > where         : a chromadb parameter to find chunks using metadata or distance filters
-    > contains      : 
-    > max_distance  :
+    > max_distance  : 
 
     """
     collection = get_collection()
